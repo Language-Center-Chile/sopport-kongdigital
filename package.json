@@ -10,7 +10,7 @@
     "serve:ssr:sopport-app": "node dist/sopport-app/server/server.mjs"
   },
   "private": true,
-  "packageManager": "npm@11.12.1",
+  "packageManager": "pnpm@10.15.1",
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",

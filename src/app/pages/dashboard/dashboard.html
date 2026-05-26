@@ -1,0 +1,154 @@
+<div class="flex-1 flex flex-col overflow-y-auto bg-slate-50/50 p-8 space-y-8">
+  <!-- Header Title -->
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800 font-display">Dashboard</h2>
+    <p class="text-sm text-slate-500 mt-1">Overview of your desk operations and agent efficiency metrics.</p>
+  </div>
+
+  <!-- Operational Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- CSAT -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div class="flex justify-between items-start">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Customer Satisfaction (CSAT)</span>
+        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">+1.2%</span>
+      </div>
+      <div class="flex items-baseline gap-2 mt-4">
+        <h3 class="text-3xl font-bold font-display text-slate-800">{{ satisfactionRate }}%</h3>
+        <span class="text-xs text-slate-400">target 95%</span>
+      </div>
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+        <div class="bg-emerald-500 h-full rounded-full" [style.width.%]="satisfactionRate"></div>
+      </div>
+    </div>
+
+    <!-- Response Time -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div class="flex justify-between items-start">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Response Time</span>
+        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">-3m</span>
+      </div>
+      <div class="flex items-baseline gap-2 mt-4">
+        <h3 class="text-3xl font-bold font-display text-slate-800">{{ avgResponseTime }}</h3>
+        <span class="text-xs text-slate-400">industry avg 45m</span>
+      </div>
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+        <div class="bg-brand-500 h-full rounded-full" style="width: 80%"></div>
+      </div>
+    </div>
+
+    <!-- Resolve Time -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div class="flex justify-between items-start">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Resolve Time</span>
+        <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full">+15m</span>
+      </div>
+      <div class="flex items-baseline gap-2 mt-4">
+        <h3 class="text-3xl font-bold font-display text-slate-800">{{ avgResolveTime }}</h3>
+        <span class="text-xs text-slate-400 font-medium">target under 4h</span>
+      </div>
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+        <div class="bg-amber-500 h-full rounded-full" style="width: 65%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts & Agent Info Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Chart: Weekly Ticket Volume -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs lg:col-span-2 flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h4 class="text-sm font-bold text-slate-800 font-display">Weekly Ticket Volume</h4>
+          <p class="text-xs text-slate-400 mt-0.5">Performance chart showing incoming vs resolved requests.</p>
+        </div>
+        <div class="flex items-center gap-4 text-xs font-semibold">
+          <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span> Incoming</div>
+          <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Resolved</div>
+        </div>
+      </div>
+
+      <!-- SVG Chart -->
+      <div class="w-full h-48 relative">
+        <svg viewBox="0 0 500 150" class="w-full h-full">
+          <defs>
+            <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#104ef5" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#104ef5" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Horizontal Grid Lines -->
+          <line x1="0" y1="20" x2="500" y2="20" stroke="#f1f5f9" stroke-width="1" />
+          <line x1="0" y1="60" x2="500" y2="60" stroke="#f1f5f9" stroke-width="1" />
+          <line x1="0" y1="100" x2="500" y2="100" stroke="#f1f5f9" stroke-width="1" />
+          <line x1="0" y1="140" x2="500" y2="140" stroke="#f8fafc" stroke-width="1.5" />
+
+          <!-- Incoming line & fill -->
+          <path d="M 0 120 C 50 110, 100 60, 150 70 C 200 80, 250 30, 300 40 C 350 50, 400 10, 450 15 C 475 18, 500 5, 500 5 L 500 140 L 0 140 Z" fill="url(#blueGrad)"/>
+          <path d="M 0 120 C 50 110, 100 60, 150 70 C 200 80, 250 30, 300 40 C 350 50, 400 10, 450 15 C 475 18, 500 5, 500 5" fill="none" stroke="#104ef5" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- Resolved line & fill -->
+          <path d="M 0 135 C 50 130, 100 85, 150 90 C 200 95, 250 50, 300 65 C 350 80, 400 20, 450 25 C 475 28, 500 12, 500 12 L 500 140 L 0 140 Z" fill="url(#greenGrad)"/>
+          <path d="M 0 135 C 50 130, 100 85, 150 90 C 200 95, 250 50, 300 65 C 350 80, 400 20, 450 25 C 475 28, 500 12, 500 12" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3,3"/>
+        </svg>
+      </div>
+
+      <!-- X Axis Labels -->
+      <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2 px-1">
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+        <span>Sun</span>
+      </div>
+    </div>
+
+    <!-- Active Agents Panel -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+      <div>
+        <h4 class="text-sm font-bold text-slate-800 font-display mb-1">Active Support Team</h4>
+        <p class="text-xs text-slate-400 mb-4">Current availability and metrics of desk agents.</p>
+
+        <!-- Agents List -->
+        <div class="space-y-4">
+          @for (agent of activeAgents; track agent.name) {
+            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <img [src]="agent.avatar" alt="Agent avatar" class="w-9 h-9 rounded-full object-cover" />
+                <div>
+                  <h5 class="text-xs font-semibold text-slate-800">{{ agent.name }}</h5>
+                  <span class="flex items-center gap-1.5 mt-0.5 text-[9px] font-bold uppercase tracking-wider" 
+                    [ngClass]="agent.status === 'Active' ? 'text-emerald-600' : 'text-slate-400'">
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="agent.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
+                    {{ agent.status }}
+                  </span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-bold text-slate-700 block">{{ agent.resolved }}</span>
+                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Resolved today</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between text-xs font-semibold text-brand-600 hover:text-brand-700 cursor-pointer">
+        <span>Manage Agent Rotations</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
