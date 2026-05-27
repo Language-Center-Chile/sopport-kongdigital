@@ -275,12 +275,8 @@ export class TicketService {
       const defaultUser = users[0];
 
       for (const t of this.initialTickets) {
-        // Map priority string
-        let dbPriority = t.priority;
-        if (dbPriority === 'Urgent') dbPriority = 'Urgent';
-
         const statusId = statuses.find((s: any) => s.name === t.status)?.id;
-        const priorityId = priorities.find((p: any) => p.name === dbPriority)?.id;
+        const priorityId = priorities.find((p: any) => p.name === t.priority)?.id;
 
         await this.supabase.client.from('tickets').insert({
           subject: t.title,

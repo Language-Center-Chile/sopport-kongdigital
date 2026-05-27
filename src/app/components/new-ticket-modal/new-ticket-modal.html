@@ -77,42 +77,13 @@
       <!-- Description -->
       <div>
         <label for="ticket-description" class="block text-sm font-medium text-slate-700 mb-2">Description</label>
-        <!-- Toolbar -->
-        <div class="flex items-center gap-1 p-2 border border-slate-300 border-b-0 rounded-t-lg bg-slate-50">
-          <button type="button" class="p-2 hover:bg-slate-200 rounded transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M14.8284 4.92893C14.0474 4.14788 12.7811 4.14788 11.9999 4.92893L4.92888 11.9999C4.14783 12.781 4.14783 14.0473 4.92888 14.8284L9.69668 19.5962C10.0872 19.9867 10.7204 19.9867 11.1109 19.5962C11.5014 19.2057 11.5014 18.5725 11.1109 18.182L7.75731 14.8284L16.2425 6.34315C16.633 5.95262 16.633 5.31946 16.2425 4.92893C15.8519 4.53841 15.2188 4.53841 14.8282 4.92893L14.8284 4.92893Z"></path>
-            </svg>
-          </button>
-          <button type="button" class="p-2 hover:bg-slate-200 rounded transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 7H17V9H7V7ZM7 11H14V13H7V11ZM7 15H17V17H7V15Z"></path>
-            </svg>
-          </button>
-          <button type="button" class="p-2 hover:bg-slate-200 rounded transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M5 5H19V7H5V5ZM5 9H12V11H5V9ZM5 13H19V15H5V13ZM5 17H12V19H5V17Z"></path>
-            </svg>
-          </button>
-          <div class="w-px h-5 bg-slate-300 mx-1"></div>
-          <button type="button" class="p-2 hover:bg-slate-200 rounded transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V6.5L15.5 2ZM14 6.5V4L18.5 8.5H16C14.8954 8.5 14 7.60457 14 6.5ZM6 20H18V11H14C12.8954 11 12 10.1046 12 9V4H6V20Z"></path>
-            </svg>
-          </button>
-          <button type="button" class="p-2 hover:bg-slate-200 rounded transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 7H11V13H17V11H13V7ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"></path>
-            </svg>
-          </button>
-        </div>
         <textarea 
           name="description"
           id="ticket-description"
           [(ngModel)]="description"
           rows="5"
           placeholder="Provide as much detail as possible, including steps to reproduce the issue..." 
-          class="w-full px-4 py-3 text-sm text-slate-800 bg-white border border-slate-300 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+          class="w-full px-4 py-3 text-sm text-slate-800 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
         ></textarea>
       </div>
 
@@ -148,7 +119,7 @@
           (click)="onCancel()"
           class="px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg cursor-pointer transition-all"
         >
-          Save as Draft
+          Cancelar
         </button>
         <button 
           type="button" 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -16,11 +16,14 @@ export class SettingsComponent {
   notifications = {
     newTicket: true,
     urgentOnly: false,
-    dailyReport: true,
-    slackIntegration: false
+    dailyReport: true
   };
 
+  saved = signal(false);
+
   saveSettings() {
-    alert('Settings saved successfully!');
+    // TODO: Implement actual save logic (API call)
+    this.saved.set(true);
+    setTimeout(() => this.saved.set(false), 3000);
   }
 }
