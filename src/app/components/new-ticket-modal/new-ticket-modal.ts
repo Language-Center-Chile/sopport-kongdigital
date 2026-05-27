@@ -25,27 +25,37 @@ export class NewTicketModalComponent {
   categories = ['Select a category', 'Bug Report', 'Feature Request', 'Technical Support', 'Billing Inquiry', 'Other'];
   priorities = ['Low - General inquiry', 'Medium - Standard issue', 'High - Critical problem'];
 
-  onSubmit() {
+  async onSubmit() {
+    console.log('onSubmit called! subject:', this.subject);
     if (!this.subject) {
       return;
     }
 
     // Map the priority to the existing format
     let mappedPriority: 'Low' | 'Medium' | 'Urgent' = 'Medium';
-    if (this.priority.includes('Low')) mappedPriority = 'Low';
-    if (this.priority.includes('High')) mappedPriority = 'Urgent';
+    if (this.priority && typeof this.priority === 'string') {
+      if (this.priority.includes('Low')) mappedPriority = 'Low';
+      if (this.priority.includes('High')) mappedPriority = 'Urgent';
+    }
 
-    this.ticketService.addTicket({
-      title: this.subject,
-      description: this.description || 'No description provided.',
-      customerName: this.customerName,
-      customerPlan: this.customerPlan,
-      status: 'Open',
-      priority: mappedPriority
-    });
+    console.log('Submitting ticket with priority:', mappedPriority);
 
-    this.resetForm();
-    this.close.emit();
+    try {
+      await this.ticketService.addTicket({
+        title: this.subject,
+        description: this.description || 'No description provided.',
+        customerName: this.customerName,
+        customerPlan: this.customerPlan,
+        status: 'Open',
+        priority: mappedPriority
+      });
+      console.log('Ticket successfully added in service!');
+      this.resetForm();
+      this.close.emit();
+    } catch (err: any) {
+      console.error('Error calling addTicket service:', err);
+      alert('Error saving ticket: ' + (err?.message || err || 'Connection Error'));
+    }
   }
 
   onCancel() {
