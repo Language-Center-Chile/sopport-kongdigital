@@ -143,7 +143,6 @@ export class TicketService {
   readonly statusFilter = signal<string>('All');
   readonly sortBy = signal<'Newest' | 'Oldest'>('Newest');
 
-  // Stats offset to match image exactly (Total Open = 1284, In Progress = 432, Urgent = 18, Resolved = 85)
   readonly stats = computed(() => {
     const list = this.tickets();
     
@@ -154,10 +153,10 @@ export class TicketService {
     const resolvedInList = list.filter(t => t.status === 'Resolved').length;
 
     return {
-      totalOpen: 1282 + openInList,
-      inProgress: 430 + progressInList,
-      urgent: 16 + urgentInList,
-      resolved: 83 + resolvedInList
+      totalOpen: openInList,
+      inProgress: progressInList,
+      urgent: urgentInList,
+      resolved: resolvedInList
     };
   });
 
