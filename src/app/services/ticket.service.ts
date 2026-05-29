@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { InsforgeService } from './insforge.service';
 
 export interface Customer {
   name: string;
@@ -25,13 +25,34 @@ export interface Ticket {
   createdAt: Date;
 }
 
+interface DbTicket {
+  id: string;
+  subject: string;
+  description: string;
+  assigned_to: string;
+  created_at: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  status?: {
+    id: string;
+    name: string;
+  };
+  priority?: {
+    id: string;
+    name: string;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class TicketService {
-  private readonly supabase = inject(SupabaseService);
+  private readonly insforge = inject(InsforgeService);
 
-  // Base tickets matching the screenshot and some extra for interactivity
   private readonly initialTickets: Omit<Ticket, 'id'>[] = [
     {
       type: 'INC',
@@ -137,7 +158,6 @@ export class TicketService {
     }
   ];
 
-  // Core state signals
   readonly tickets = signal<Ticket[]>([]);
   readonly searchQuery = signal<string>('');
   readonly statusFilter = signal<string>('All');
@@ -146,7 +166,6 @@ export class TicketService {
   readonly stats = computed(() => {
     const list = this.tickets();
     
-    // Count status from the active array
     const openInList = list.filter(t => t.status === 'Open').length;
     const progressInList = list.filter(t => t.status === 'In Progress').length;
     const urgentInList = list.filter(t => t.priority === 'Urgent' && t.status !== 'Resolved').length;
@@ -160,13 +179,11 @@ export class TicketService {
     };
   });
 
-  // Filtered and sorted tickets
   readonly filteredTickets = computed(() => {
     let result = [...this.tickets()];
     const query = this.searchQuery().toLowerCase().trim();
     const status = this.statusFilter();
 
-    // 1. Search Query Filter
     if (query) {
       result = result.filter(ticket => 
         ticket.id.toLowerCase().includes(query) ||
@@ -177,12 +194,10 @@ export class TicketService {
       );
     }
 
-    // 2. Status Filter
     if (status !== 'All') {
       result = result.filter(ticket => ticket.status === status);
     }
 
-    // 3. Sorting
     const sortOrder = this.sortBy();
     result.sort((a, b) => {
       if (sortOrder === 'Newest') {
@@ -196,43 +211,28 @@ export class TicketService {
   });
 
   constructor() {
-    this.initSupabaseConnection();
+    this.initDatabaseConnection();
   }
 
-  private async initSupabaseConnection() {
+  private async initDatabaseConnection() {
     await this.loadTicketsFromDatabase();
   }
 
-  // Load from Postgres and map to local structures
   private async loadTicketsFromDatabase() {
     try {
-      const { data: dbTickets, error } = await this.supabase.client
+      const dbTicketsResponse = await this.insforge.getDatabase()
         .from('tickets')
-        .select(`
-          id,
-          subject,
-          description,
-          assigned_to,
-          created_at,
-          user:users(id, name, email, role),
-          status:statuses(id, name),
-          priority:priorities(id, name)
-        `);
+        .select('*,user:users(id,name,email,role),status:statuses(id,name),priority:priorities(id,name)');
+      
+      const dbTickets = dbTicketsResponse.data || [];
 
-      if (error) {
-        console.error('Error loading tickets from Supabase:', error);
-        return;
-      }
-
-      // If database is completely empty, seed it with the mock data!
       if (!dbTickets || dbTickets.length === 0) {
-        console.log('Postgres database is empty. Seeding initial tickets...');
+        console.log('Database is empty. Seeding initial tickets...');
         await this.seedDatabase();
-        await this.loadTicketsFromDatabase();
         return;
       }
 
-      const mapped: Ticket[] = dbTickets.map((t: any) => {
+      const mapped: Ticket[] = dbTickets.map((t: DbTicket) => {
         const priorityName = t.priority?.name || 'Low';
         return {
           id: t.id,
@@ -244,8 +244,8 @@ export class TicketService {
             plan: t.user?.role || 'Growth Plan',
             initials: this.getInitials(t.user?.name || 'Unknown User')
           },
-          status: t.status?.name || 'Open',
-          priority: priorityName,
+          status: (t.status?.name as Ticket['status']) || 'Open',
+          priority: priorityName as Ticket['priority'],
           activity: {
             time: 'Just now',
             description: `Assigned to ${t.assigned_to || 'None'}`
@@ -256,16 +256,19 @@ export class TicketService {
 
       this.tickets.set(mapped);
     } catch (e) {
-      console.error('Failed to connect and sync with Supabase', e);
+      console.error('Failed to connect and sync with InsForge', e);
     }
   }
 
-  // Seed the empty database with mock tickets and link them to categories
   private async seedDatabase() {
     try {
-      const { data: statuses } = await this.supabase.client.from('statuses').select('*');
-      const { data: priorities } = await this.supabase.client.from('priorities').select('*');
-      const { data: users } = await this.supabase.client.from('users').select('*');
+      const statusesResponse = await this.insforge.getDatabase().from('statuses').select();
+      const prioritiesResponse = await this.insforge.getDatabase().from('priorities').select();
+      const usersResponse = await this.insforge.getDatabase().from('users').select();
+
+      const statuses = statusesResponse.data || [];
+      const priorities = prioritiesResponse.data || [];
+      const users = usersResponse.data || [];
 
       if (!statuses || !priorities || !users || users.length === 0) {
         console.warn('Database dependencies missing for seed.');
@@ -278,23 +281,26 @@ export class TicketService {
         const statusId = statuses.find((s: any) => s.name === t.status)?.id;
         const priorityId = priorities.find((p: any) => p.name === t.priority)?.id;
 
-        await this.supabase.client.from('tickets').insert({
-          subject: t.title,
-          description: t.description,
-          user_id: defaultUser.id,
-          assigned_to: 'Alex Thompson',
-          status_id: statusId,
-          priority_id: priorityId,
-          created_at: t.createdAt.toISOString()
-        });
+        await this.insforge.getDatabase()
+          .from('tickets')
+          .insert({
+            subject: t.title,
+            description: t.description,
+            user_id: defaultUser.id,
+            assigned_to: 'Alex Thompson',
+            status_id: statusId,
+            priority_id: priorityId,
+            created_at: t.createdAt.toISOString()
+          });
       }
+      
       console.log('Database successfully seeded!');
+      await this.loadTicketsFromDatabase();
     } catch (e) {
       console.error('Error seeding database:', e);
     }
   }
 
-  // Add a ticket
   async addTicket(newTicket: {
     title: string;
     description: string;
@@ -304,79 +310,69 @@ export class TicketService {
     priority: Ticket['priority'];
   }) {
     try {
-      const { data: statuses } = await this.supabase.client.from('statuses').select('*');
-      const { data: priorities } = await this.supabase.client.from('priorities').select('*');
-      const { data: users } = await this.supabase.client.from('users').select('*');
+      const statusesResponse = await this.insforge.getDatabase().from('statuses').select();
+      const prioritiesResponse = await this.insforge.getDatabase().from('priorities').select();
+      const usersResponse = await this.insforge.getDatabase().from('users').select();
+
+      const statuses = statusesResponse.data || [];
+      const priorities = prioritiesResponse.data || [];
+      const users = usersResponse.data || [];
 
       if (!statuses || !priorities || !users) return;
 
-      // Find or create user
       let user = users.find((u: any) => u.name && u.name.trim().toLowerCase() === newTicket.customerName.trim().toLowerCase());
-      if (!user) {
-        if (users.length > 0) {
-          user = users[0];
-        } else {
-          const { data: newUser } = await this.supabase.client
-            .from('users')
-            .insert({
-              name: newTicket.customerName,
-              email: `${newTicket.customerName.toLowerCase().replace(' ', '')}@example.com`,
-              role: newTicket.customerPlan
-            })
-            .select()
-            .single();
-          user = newUser;
-        }
+      if (!user && users.length > 0) {
+        user = users[0];
+      } else if (!user) {
+        const newUserResponse = await this.insforge.getDatabase()
+          .from('users')
+          .insert({
+            name: newTicket.customerName,
+            email: `${newTicket.customerName.toLowerCase().replace(' ', '')}@example.com`,
+            role: newTicket.customerPlan
+          });
+        user = newUserResponse.data?.[0];
       }
 
-      // Safe fallback status
       let statusId = statuses.find((s: any) => s.name.trim().toLowerCase() === newTicket.status.trim().toLowerCase())?.id;
       if (!statusId && statuses.length > 0) {
         statusId = statuses[0].id;
       }
 
-      // Safe fallback priority
       let priorityId = priorities.find((p: any) => p.name.trim().toLowerCase() === newTicket.priority.trim().toLowerCase())?.id;
       if (!priorityId && priorities.length > 0) {
         priorityId = priorities[0].id;
       }
 
-      const { error } = await this.supabase.client.from('tickets').insert({
-        subject: newTicket.title,
-        description: newTicket.description,
-        user_id: user?.id,
-        status_id: statusId,
-        priority_id: priorityId
-      });
-
-      if (error) {
-        console.error('Failed to create ticket in Supabase:', error);
-        throw error;
-      }
+      await this.insforge.getDatabase()
+        .from('tickets')
+        .insert({
+          subject: newTicket.title,
+          description: newTicket.description,
+          user_id: (user as any)?.id,
+          status_id: statusId,
+          priority_id: priorityId
+        });
 
       await this.loadTicketsFromDatabase();
     } catch (e) {
-      console.error('Failed to add ticket to Supabase:', e);
+      console.error('Failed to add ticket to InsForge:', e);
       throw e;
     }
   }
 
-  // Update status
   async updateStatus(id: string, status: Ticket['status']) {
     try {
-      const { data: statuses } = await this.supabase.client.from('statuses').select('*');
+      const statusesResponse = await this.insforge.getDatabase().from('statuses').select();
+      const statuses = statusesResponse.data || [];
       if (!statuses) return;
 
       const statusId = statuses.find((s: any) => s.name === status)?.id;
       
-      const { error } = await this.supabase.client
+      await this.insforge.getDatabase()
         .from('tickets')
         .update({ status_id: statusId })
         .eq('id', id);
-
-      if (error) {
-        console.error('Failed to update status in Supabase:', error);
-      }
 
       await this.loadTicketsFromDatabase();
     } catch (e) {
@@ -384,22 +380,18 @@ export class TicketService {
     }
   }
 
-  // Update priority
   async updatePriority(id: string, priority: Ticket['priority']) {
     try {
-      const { data: priorities } = await this.supabase.client.from('priorities').select('*');
+      const prioritiesResponse = await this.insforge.getDatabase().from('priorities').select();
+      const priorities = prioritiesResponse.data || [];
       if (!priorities) return;
 
       const priorityId = priorities.find((p: any) => p.name === priority)?.id;
 
-      const { error } = await this.supabase.client
+      await this.insforge.getDatabase()
         .from('tickets')
         .update({ priority_id: priorityId })
         .eq('id', id);
-
-      if (error) {
-        console.error('Failed to update priority in Supabase:', error);
-      }
 
       await this.loadTicketsFromDatabase();
     } catch (e) {
