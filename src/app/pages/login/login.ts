@@ -31,6 +31,7 @@ export class LoginComponent {
     setTimeout(() => {
       this.isLoading.set(false);
       // For now, allow any non-empty credentials
+      localStorage.setItem('isLoggedIn', 'true');
       this.router.navigate(['/dashboard']);
     }, 1000);
   }
