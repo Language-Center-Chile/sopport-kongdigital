@@ -1,0 +1,349 @@
+<div class="p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-display font-bold text-slate-800 tracking-tight">Panel de Administración</h1>
+      <p class="text-sm text-slate-500 mt-1">Portal exclusivo para administradores. Agrega nuevos agentes, genera contraseñas de seguridad y gestiona roles corporativos.</p>
+    </div>
+    <button (click)="openAddModal()" class="flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm px-5 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-brand-600/10 cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Nuevo Agente</span>
+    </button>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm">
+    <div class="relative max-w-md">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Buscar agente por nombre, correo o rol..." 
+        class="block w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-800 text-sm focus:outline-none focus:border-brand-500 focus:bg-white transition-all placeholder-slate-400"
+      />
+    </div>
+  </div>
+
+  <!-- Agents Table -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200/80">
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Agente</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Correo Electrónico</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Contraseña Asignada</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Rol de Soporte</th>
+            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (agent of filteredAgents; track agent.id) {
+            <tr class="hover:bg-slate-50/50 transition-all duration-150">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <img [src]="agent.avatar" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-slate-200" />
+                  <div>
+                    <span class="font-semibold text-sm text-slate-800 block">{{ agent.name }}</span>
+                    @if (agent.id === currentAgentId) {
+                      <span class="text-[9px] font-bold bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded">TÚ (SESIÓN ACTIVA)</span>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-600 font-mono">{{ agent.email }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 font-mono">
+                <span class="bg-slate-50 border border-slate-100 px-2 py-1 rounded text-xs select-all">{{ agent.password || '••••••••' }}</span>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-700">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="{
+                    'bg-violet-50 text-violet-700 font-semibold': agent.role === 'Admin',
+                    'bg-slate-100 text-slate-800': agent.role !== 'Admin'
+                  }"
+                >
+                  {{ agent.role }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                <span 
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                  [ngClass]="{
+                    'bg-emerald-50 text-emerald-700': agent.status === 'Active',
+                    'bg-amber-50 text-amber-700': agent.status === 'On Break',
+                    'bg-slate-100 text-slate-500': agent.status === 'Offline'
+                  }"
+                >
+                  <span 
+                    class="w-1.5 h-1.5 rounded-full"
+                    [ngClass]="{
+                      'bg-emerald-500 animate-pulse': agent.status === 'Active',
+                      'bg-amber-500': agent.status === 'On Break',
+                      'bg-slate-400': agent.status === 'Offline'
+                    }"
+                  ></span>
+                  {{ agent.status === 'Active' ? 'Online' : agent.status === 'On Break' ? 'En Pausa' : 'Offline' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                <button (click)="openEditModal(agent)" class="text-brand-600 hover:text-brand-700 font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-brand-50 transition-all cursor-pointer">
+                  Editar Rol
+                </button>
+                <button 
+                  (click)="openDeleteConfirm(agent)" 
+                  [disabled]="agent.id === currentAgentId"
+                  [ngClass]="{
+                    'text-rose-600 hover:text-rose-700 hover:bg-rose-50': agent.id !== currentAgentId,
+                    'text-slate-300 cursor-not-allowed': agent.id === currentAgentId
+                  }"
+                  class="font-semibold text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                <p class="text-sm font-medium">No se encontraron agentes registrados.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal: Agregar Agente -->
+  @if (showAddModal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden animate-scale-up">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800">Crear Cuenta de Agente</h3>
+          <button (click)="closeAddModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        @if (!showPasswordReveal()) {
+          <form (ngSubmit)="onAddAgentSubmit()" class="p-6 space-y-4">
+            @if (errorMessage) {
+              <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
+                {{ errorMessage }}
+              </div>
+            }
+
+            <div class="space-y-1">
+              <label for="admin-add-agent-name" class="text-xs font-semibold text-slate-500 uppercase">Nombre Completo</label>
+              <input 
+                type="text" 
+                id="admin-add-agent-name"
+                [(ngModel)]="formName" 
+                name="name" 
+                required
+                placeholder="Ej. Víctor Morales"
+                autocomplete="name"
+                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label for="admin-add-agent-email" class="text-xs font-semibold text-slate-500 uppercase">Correo Electrónico (Debe terminar en @kong.cl)</label>
+              <input 
+                type="email" 
+                id="admin-add-agent-email"
+                [(ngModel)]="formEmail" 
+                name="email" 
+                required
+                placeholder="victor@kong.cl"
+                autocomplete="email"
+                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label for="admin-add-agent-role" class="text-xs font-semibold text-slate-500 uppercase">Rol Corporativo</label>
+              <select 
+                id="admin-add-agent-role"
+                [(ngModel)]="formRole" 
+                name="role"
+                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white"
+              >
+                <option value="Support Agent">Support Agent</option>
+                <option value="Lead Support Agent">Lead Support Agent</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button type="button" (click)="closeAddModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 text-sm font-medium transition cursor-pointer">
+                Cancelar
+              </button>
+              <button type="submit" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-brand-600/10 cursor-pointer">
+                Generar Contraseña e Inscribir
+              </button>
+            </div>
+          </form>
+        } @else {
+          <!-- Password Reveal Screen -->
+          <div class="p-6 space-y-6 text-center">
+            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div class="space-y-2">
+              <h4 class="font-bold text-slate-800 text-lg">Agente Creado Exitosamente</h4>
+              <p class="text-sm text-slate-500">Copia y entrega la siguiente contraseña asignada al agente. No podrá volver a visualizarse por razones de seguridad.</p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between font-mono text-base font-bold text-slate-800 text-center tracking-wider select-all">
+              <span>{{ generatedPassword }}</span>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex justify-center">
+              <button (click)="closeAddModal()" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition shadow-lg cursor-pointer">
+                Listo, Entendido y Cerrar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Editar Agente -->
+  @if (showEditModal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden animate-scale-up">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800">Modificar Rol de Agente</h3>
+          <button (click)="closeEditModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <form (ngSubmit)="onEditAgentSubmit()" class="p-6 space-y-4">
+          @if (errorMessage) {
+            <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <div class="space-y-1">
+            <label for="admin-edit-agent-name" class="text-xs font-semibold text-slate-500 uppercase">Nombre Completo</label>
+            <input 
+              type="text" 
+              id="admin-edit-agent-name"
+              [(ngModel)]="formName" 
+              name="name" 
+              required
+              autocomplete="name"
+              class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label for="admin-edit-agent-email" class="text-xs font-semibold text-slate-500 uppercase block">Correo Electrónico</label>
+            <input 
+              type="email" 
+              id="admin-edit-agent-email"
+              [ngModel]="formEmail" 
+              name="email" 
+              disabled
+              autocomplete="email"
+              class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-400 bg-slate-50 focus:outline-none"
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs font-semibold text-slate-500 uppercase">Rol de Soporte</label>
+            @if (selectedAgentId === currentAgentId) {
+              <div class="p-3 bg-brand-50 text-brand-700 text-xs rounded-xl border border-brand-100 mb-2 font-medium">
+                No puedes modificar tu propio rol administrativo desde tu sesión activa para evitar desconfiguraciones.
+              </div>
+              <select 
+                id="admin-edit-agent-role-disabled"
+                [ngModel]="formRole" 
+                name="role"
+                disabled
+                class="block w-full border border-slate-100 rounded-xl px-4 py-2.5 text-sm text-slate-400 bg-slate-50 cursor-not-allowed"
+              >
+                <option [value]="formRole">{{ formRole }}</option>
+              </select>
+            } @else {
+              <select 
+                id="admin-edit-agent-role"
+                [(ngModel)]="formRole" 
+                name="role"
+                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white"
+              >
+                <option value="Support Agent">Support Agent</option>
+                <option value="Lead Support Agent">Lead Support Agent</option>
+                <option value="Admin">Admin</option>
+              </select>
+            }
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" (click)="closeEditModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 text-sm font-medium transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-brand-600/10 cursor-pointer">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Confirmar Eliminación -->
+  @if (showDeleteConfirmModal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden animate-scale-up">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800">Confirmar Eliminación</h3>
+          <button (click)="closeDeleteConfirm()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <div class="text-center space-y-2">
+            <p class="text-sm font-semibold text-slate-800">¿Estás seguro de que deseas eliminar a este agente?</p>
+            <p class="text-xs text-slate-500">Esta acción eliminará a <strong>{{ agentToDelete?.name }}</strong> ({{ agentToDelete?.email }}) de la base de datos de Kong Digital de forma permanente.</p>
+          </div>
+        </div>
+
+        <div class="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button type="button" (click)="closeDeleteConfirm()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 text-sm font-medium transition cursor-pointer">
+            Cancelar
+          </button>
+          <button type="button" (click)="onDeleteConfirm()" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-rose-600/10 cursor-pointer">
+            Eliminar Agente
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

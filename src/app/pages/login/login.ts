@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AgentService } from '../../services/agent.service';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class LoginComponent {
   private readonly router = inject(Router);
+  private readonly agentService = inject(AgentService);
 
   email = signal('');
   password = signal('');
@@ -26,13 +28,13 @@ export class LoginComponent {
     this.errorMessage.set('');
     this.isLoading.set(true);
 
-    // TODO: Implement actual authentication logic here
-    // Simulating API call
-    setTimeout(() => {
+    try {
+      await this.agentService.login(this.email(), this.password());
       this.isLoading.set(false);
-      // For now, allow any non-empty credentials
-      localStorage.setItem('isLoggedIn', 'true');
       this.router.navigate(['/dashboard']);
-    }, 1000);
+    } catch (e: any) {
+      this.isLoading.set(false);
+      this.errorMessage.set(e.message || 'Error de inicio de sesión.');
+    }
   }
 }

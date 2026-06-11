@@ -33,6 +33,24 @@
         <span>Tickets</span>
       </a>
 
+      <!-- Agents Link -->
+      <a routerLink="/agents" routerLinkActive="bg-brand-50 text-brand-600 font-semibold border-l-4 border-brand-500 pl-3!" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50/50 rounded-xl transition-all duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span>Agentes</span>
+      </a>
+
+      <!-- Admin Panel Link -->
+      @if (agentService.currentAgent()?.role === 'Admin') {
+        <a routerLink="/admin-panel" routerLinkActive="bg-brand-50 text-brand-600 font-semibold border-l-4 border-brand-500 pl-3!" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50/50 rounded-xl transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <span>Panel Admin</span>
+        </a>
+      }
+
       <!-- New Ticket (Triggers modal) -->
       <a href="#" (click)="onCreateTicketClick($event)" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50/50 rounded-xl transition-all duration-200">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -53,13 +71,49 @@
   </div>
 
   <!-- Profile Section -->
-  <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-    <div class="flex items-center gap-3">
-      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face" alt="Agent avatar" class="w-10 h-10 rounded-full border border-slate-200 object-cover shadow-sm" />
-      <div class="overflow-hidden">
-        <h4 class="text-xs font-semibold text-slate-800 truncate">Alex Thompson</h4>
-        <p class="text-[10px] font-medium text-slate-500 truncate">Lead Support Agent</p>
+  <div class="p-4 border-t border-slate-100 bg-slate-50/50 space-y-3 relative">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <img [src]="agentService.currentAgent()?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face'" alt="Agent avatar" class="w-10 h-10 rounded-full border border-slate-200 object-cover shadow-sm" />
+        <div class="overflow-hidden">
+          <h4 class="text-xs font-semibold text-slate-800 truncate">{{ agentService.currentAgent()?.name || 'Invitado' }}</h4>
+          <p class="text-[10px] font-medium text-slate-500 truncate">{{ agentService.currentAgent()?.role || 'Agente de Soporte' }}</p>
+        </div>
       </div>
+
+      <!-- Status Toggle Pill -->
+      <button (click)="toggleStatusDropdown($event)" class="relative p-1.5 hover:bg-slate-200/50 rounded-lg transition-all cursor-pointer">
+        <span 
+          class="w-3 h-3 rounded-full border border-white block shadow-sm"
+          [ngClass]="{
+            'bg-emerald-500': agentService.currentAgent()?.status === 'Active',
+            'bg-amber-500': agentService.currentAgent()?.status === 'On Break',
+            'bg-slate-400': agentService.currentAgent()?.status === 'Offline' || !agentService.currentAgent()
+          }"
+        ></span>
+      </button>
     </div>
+
+    <!-- Status Dropdown Menu -->
+    @if (showStatusDropdown()) {
+      <div class="absolute bottom-16 right-4 w-40 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 space-y-0.5 z-50 animate-scale-up">
+        <button (click)="setStatus('Active')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg transition cursor-pointer">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Online</span>
+        </button>
+        <button (click)="setStatus('On Break')" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg transition cursor-pointer">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span>En Pausa</span>
+        </button>
+      </div>
+    }
+
+    <!-- Logout Button -->
+    <button (click)="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+      <span>Cerrar Sesión</span>
+    </button>
   </div>
 </aside>

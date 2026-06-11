@@ -14,12 +14,12 @@
         <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">+1.2%</span>
       </div>
       <div class="flex items-baseline gap-2 mt-4">
-        <h3 class="text-3xl font-bold font-display text-slate-800">{{ satisfactionRate }}%</h3>
+        <h3 class="text-3xl font-bold font-display text-slate-800">{{ satisfactionRate() }}%</h3>
         <span class="text-xs text-slate-400">target 95%</span>
       </div>
       <!-- Progress Bar -->
       <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
-        <div class="bg-emerald-500 h-full rounded-full" [style.width.%]="satisfactionRate"></div>
+        <div class="bg-emerald-500 h-full rounded-full" [style.width.%]="satisfactionRate()"></div>
       </div>
     </div>
 
@@ -30,7 +30,7 @@
         <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">-3m</span>
       </div>
       <div class="flex items-baseline gap-2 mt-4">
-        <h3 class="text-3xl font-bold font-display text-slate-800">{{ avgResponseTime }}</h3>
+        <h3 class="text-3xl font-bold font-display text-slate-800">{{ avgResponseTime() }}</h3>
         <span class="text-xs text-slate-400">industry avg 45m</span>
       </div>
       <!-- Progress Bar -->
@@ -46,7 +46,7 @@
         <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full">+15m</span>
       </div>
       <div class="flex items-baseline gap-2 mt-4">
-        <h3 class="text-3xl font-bold font-display text-slate-800">{{ avgResolveTime }}</h3>
+        <h3 class="text-3xl font-bold font-display text-slate-800">{{ avgResolveTime() }}</h3>
         <span class="text-xs text-slate-400 font-medium">target under 4h</span>
       </div>
       <!-- Progress Bar -->
@@ -121,7 +121,7 @@
 
         <!-- Agents List -->
         <div class="space-y-4">
-          @for (agent of activeAgents; track agent.name) {
+          @for (agent of activeAgents(); track agent.id) {
             <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
               <div class="flex items-center gap-3">
                 <img [src]="agent.avatar" alt="Agent avatar" class="w-9 h-9 rounded-full object-cover" />
@@ -130,7 +130,7 @@
                   <span class="flex items-center gap-1.5 mt-0.5 text-[9px] font-bold uppercase tracking-wider" 
                     [ngClass]="agent.status === 'Active' ? 'text-emerald-600' : 'text-slate-400'">
                     <span class="w-1.5 h-1.5 rounded-full" [ngClass]="agent.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'"></span>
-                    {{ agent.status }}
+                    {{ agent.status === 'Active' ? 'Online' : 'En Pausa' }}
                   </span>
                 </div>
               </div>
