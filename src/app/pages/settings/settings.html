@@ -36,20 +36,24 @@
         <!-- Profile Inputs -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Full Name</label>
+            <label for="agent-name" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Full Name</label>
             <input 
               type="text" 
+              id="agent-name"
               name="agentName"
               [(ngModel)]="agentName"
+              autocomplete="name"
               class="w-full px-4 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:border-brand-500 focus:bg-white transition-all"
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+            <label for="agent-email" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
             <input 
               type="email" 
+              id="agent-email"
               name="agentEmail"
               [(ngModel)]="agentEmail"
+              autocomplete="email"
               class="w-full px-4 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:border-brand-500 focus:bg-white transition-all"
             />
           </div>
@@ -57,12 +61,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Job Title</label>
+            <label for="agent-role" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Job Title</label>
             <input 
               type="text" 
+              id="agent-role"
               name="agentRole"
               [(ngModel)]="agentRole"
               readonly
+              autocomplete="organization-title"
               class="w-full px-4 py-2.5 text-sm text-slate-400 bg-slate-100 border border-slate-200 rounded-xl cursor-not-allowed"
             />
           </div>
@@ -74,11 +80,12 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <h5 class="text-xs font-semibold text-slate-800">New ticket email notifications</h5>
+              <label for="new-ticket-notify" class="text-xs font-semibold text-slate-800 block cursor-pointer">New ticket email notifications</label>
               <p class="text-[10px] text-slate-400 mt-0.5">Receive an email immediately when a new ticket is assigned to you.</p>
             </div>
             <input 
               type="checkbox" 
+              id="new-ticket-notify"
               name="newTicket"
               [(ngModel)]="notifications.newTicket"
               class="w-9 h-5 bg-slate-200 checked:bg-brand-500 rounded-full cursor-pointer appearance-none relative before:content-[''] before:absolute before:h-4 before:w-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-transform duration-200"
@@ -87,11 +94,12 @@
 
           <div class="flex items-center justify-between">
             <div>
-              <h5 class="text-xs font-semibold text-slate-800">Only notify on Urgent priority</h5>
+              <label for="urgent-only-notify" class="text-xs font-semibold text-slate-800 block cursor-pointer">Only notify on Urgent priority</label>
               <p class="text-[10px] text-slate-400 mt-0.5">Filter out low and medium notifications from emails.</p>
             </div>
             <input 
               type="checkbox" 
+              id="urgent-only-notify"
               name="urgentOnly"
               [(ngModel)]="notifications.urgentOnly"
               class="w-9 h-5 bg-slate-200 checked:bg-brand-500 rounded-full cursor-pointer appearance-none relative before:content-[''] before:absolute before:h-4 before:w-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-transform duration-200"
@@ -100,11 +108,12 @@
 
           <div class="flex items-center justify-between">
             <div>
-              <h5 class="text-xs font-semibold text-slate-800">Receive Daily Recap</h5>
+              <label for="daily-report-notify" class="text-xs font-semibold text-slate-800 block cursor-pointer">Receive Daily Recap</label>
               <p class="text-[10px] text-slate-400 mt-0.5">A digest email containing daily resolution stats and open tickets count.</p>
             </div>
             <input 
               type="checkbox" 
+              id="daily-report-notify"
               name="dailyReport"
               [(ngModel)]="notifications.dailyReport"
               class="w-9 h-5 bg-slate-200 checked:bg-brand-500 rounded-full cursor-pointer appearance-none relative before:content-[''] before:absolute before:h-4 before:w-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-transform duration-200"

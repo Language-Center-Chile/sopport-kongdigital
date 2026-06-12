@@ -1,5 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { InsforgeService } from './insforge.service';
+import { Injectable, signal, computed } from '@angular/core';
 
 export interface Customer {
   name: string;
@@ -25,34 +24,10 @@ export interface Ticket {
   createdAt: Date;
 }
 
-interface DbTicket {
-  id: string;
-  subject: string;
-  description: string;
-  assigned_to: string;
-  created_at: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  status?: {
-    id: string;
-    name: string;
-  };
-  priority?: {
-    id: string;
-    name: string;
-  };
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class TicketService {
-  private readonly insforge = inject(InsforgeService);
-
   private readonly initialTickets: Omit<Ticket, 'id'>[] = [
     {
       type: 'INC',
@@ -190,7 +165,10 @@ export class TicketService {
         ticket.title.toLowerCase().includes(query) ||
         ticket.description.toLowerCase().includes(query) ||
         ticket.customer.name.toLowerCase().includes(query) ||
-        ticket.customer.plan.toLowerCase().includes(query)
+        ticket.customer.plan.toLowerCase().includes(query) ||
+        ticket.priority.toLowerCase().includes(query) ||
+        ticket.status.toLowerCase().includes(query) ||
+        ticket.type.toLowerCase().includes(query)
       );
     }
 
@@ -211,93 +189,34 @@ export class TicketService {
   });
 
   constructor() {
-    this.initDatabaseConnection();
+    this.loadLocalTickets();
   }
 
-  private async initDatabaseConnection() {
-    await this.loadTicketsFromDatabase();
-  }
-
-  private async loadTicketsFromDatabase() {
-    try {
-      const dbTicketsResponse = await this.insforge.getDatabase()
-        .from('tickets')
-        .select('*,user:users(id,name,email,role),status:statuses(id,name),priority:priorities(id,name)');
-      
-      const dbTickets = dbTicketsResponse.data || [];
-
-      if (!dbTickets || dbTickets.length === 0) {
-        console.log('Database is empty. Seeding initial tickets...');
-        await this.seedDatabase();
+  private loadLocalTickets() {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const local = localStorage.getItem('tickets_fallback');
+      if (local) {
+        const parsed = JSON.parse(local).map((t: any) => ({
+          ...t,
+          createdAt: new Date(t.createdAt)
+        }));
+        this.tickets.set(parsed);
         return;
       }
-
-      const mapped: Ticket[] = dbTickets.map((t: DbTicket) => {
-        const priorityName = t.priority?.name || 'Low';
-        return {
-          id: t.id,
-          type: priorityName === 'Urgent' ? 'INC' : 'REQ',
-          title: t.subject,
-          description: t.description || 'No description provided.',
-          customer: {
-            name: t.user?.name || 'Unknown User',
-            plan: t.user?.role || 'Growth Plan',
-            initials: this.getInitials(t.user?.name || 'Unknown User')
-          },
-          status: (t.status?.name as Ticket['status']) || 'Open',
-          priority: priorityName as Ticket['priority'],
-          activity: {
-            time: 'Just now',
-            description: `Assigned to ${t.assigned_to || 'None'}`
-          },
-          createdAt: new Date(t.created_at)
-        };
-      });
-
-      this.tickets.set(mapped);
-    } catch (e) {
-      console.error('Failed to connect and sync with InsForge', e);
     }
+    
+    // Fallback/Default tickets setup
+    const initialWithIds: Ticket[] = this.initialTickets.map((t, index) => ({
+      ...t,
+      id: `INC-${1000 + index}`
+    }));
+    this.tickets.set(initialWithIds);
+    this.saveLocalTickets();
   }
 
-  private async seedDatabase() {
-    try {
-      const statusesResponse = await this.insforge.getDatabase().from('statuses').select();
-      const prioritiesResponse = await this.insforge.getDatabase().from('priorities').select();
-      const usersResponse = await this.insforge.getDatabase().from('users').select();
-
-      const statuses = statusesResponse.data || [];
-      const priorities = prioritiesResponse.data || [];
-      const users = usersResponse.data || [];
-
-      if (!statuses || !priorities || !users || users.length === 0) {
-        console.warn('Database dependencies missing for seed.');
-        return;
-      }
-
-      const defaultUser = users[0];
-
-      for (const t of this.initialTickets) {
-        const statusId = statuses.find((s: any) => s.name === t.status)?.id;
-        const priorityId = priorities.find((p: any) => p.name === t.priority)?.id;
-
-        await this.insforge.getDatabase()
-          .from('tickets')
-          .insert({
-            subject: t.title,
-            description: t.description,
-            user_id: defaultUser.id,
-            assigned_to: 'Alex Thompson',
-            status_id: statusId,
-            priority_id: priorityId,
-            created_at: t.createdAt.toISOString()
-          });
-      }
-      
-      console.log('Database successfully seeded!');
-      await this.loadTicketsFromDatabase();
-    } catch (e) {
-      console.error('Error seeding database:', e);
+  private saveLocalTickets() {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('tickets_fallback', JSON.stringify(this.tickets()));
     }
   }
 
@@ -309,94 +228,42 @@ export class TicketService {
     status: Ticket['status'];
     priority: Ticket['priority'];
   }) {
-    try {
-      const statusesResponse = await this.insforge.getDatabase().from('statuses').select();
-      const prioritiesResponse = await this.insforge.getDatabase().from('priorities').select();
-      const usersResponse = await this.insforge.getDatabase().from('users').select();
+    const generatedId = `INC-${Math.floor(1000 + Math.random() * 9000)}`;
+    const addedTicket: Ticket = {
+      id: generatedId,
+      type: newTicket.priority === 'Urgent' ? 'INC' : 'REQ',
+      title: newTicket.title,
+      description: newTicket.description,
+      customer: {
+        name: newTicket.customerName,
+        plan: newTicket.customerPlan,
+        initials: this.getInitials(newTicket.customerName)
+      },
+      status: newTicket.status,
+      priority: newTicket.priority,
+      activity: {
+        time: 'Just now',
+        description: 'Ticket created'
+      },
+      createdAt: new Date()
+    };
 
-      const statuses = statusesResponse.data || [];
-      const priorities = prioritiesResponse.data || [];
-      const users = usersResponse.data || [];
-
-      if (!statuses || !priorities || !users) return;
-
-      let user = users.find((u: any) => u.name && u.name.trim().toLowerCase() === newTicket.customerName.trim().toLowerCase());
-      if (!user && users.length > 0) {
-        user = users[0];
-      } else if (!user) {
-        const newUserResponse = await this.insforge.getDatabase()
-          .from('users')
-          .insert({
-            name: newTicket.customerName,
-            email: `${newTicket.customerName.toLowerCase().replace(' ', '')}@example.com`,
-            role: newTicket.customerPlan
-          });
-        user = newUserResponse.data?.[0];
-      }
-
-      let statusId = statuses.find((s: any) => s.name.trim().toLowerCase() === newTicket.status.trim().toLowerCase())?.id;
-      if (!statusId && statuses.length > 0) {
-        statusId = statuses[0].id;
-      }
-
-      let priorityId = priorities.find((p: any) => p.name.trim().toLowerCase() === newTicket.priority.trim().toLowerCase())?.id;
-      if (!priorityId && priorities.length > 0) {
-        priorityId = priorities[0].id;
-      }
-
-      await this.insforge.getDatabase()
-        .from('tickets')
-        .insert({
-          subject: newTicket.title,
-          description: newTicket.description,
-          user_id: (user as any)?.id,
-          status_id: statusId,
-          priority_id: priorityId
-        });
-
-      await this.loadTicketsFromDatabase();
-    } catch (e) {
-      console.error('Failed to add ticket to InsForge:', e);
-      throw e;
-    }
+    this.tickets.update(prev => [addedTicket, ...prev]);
+    this.saveLocalTickets();
   }
 
   async updateStatus(id: string, status: Ticket['status']) {
-    try {
-      const statusesResponse = await this.insforge.getDatabase().from('statuses').select();
-      const statuses = statusesResponse.data || [];
-      if (!statuses) return;
-
-      const statusId = statuses.find((s: any) => s.name === status)?.id;
-      
-      await this.insforge.getDatabase()
-        .from('tickets')
-        .update({ status_id: statusId })
-        .eq('id', id);
-
-      await this.loadTicketsFromDatabase();
-    } catch (e) {
-      console.error('Failed to update status:', e);
-    }
+    this.tickets.update(prev =>
+      prev.map(t => t.id === id ? { ...t, status, activity: { time: 'Just now', description: `Status updated to ${status}` } } : t)
+    );
+    this.saveLocalTickets();
   }
 
   async updatePriority(id: string, priority: Ticket['priority']) {
-    try {
-      const prioritiesResponse = await this.insforge.getDatabase().from('priorities').select();
-      const priorities = prioritiesResponse.data || [];
-      if (!priorities) return;
-
-      const priorityId = priorities.find((p: any) => p.name === priority)?.id;
-
-      await this.insforge.getDatabase()
-        .from('tickets')
-        .update({ priority_id: priorityId })
-        .eq('id', id);
-
-      await this.loadTicketsFromDatabase();
-    } catch (e) {
-      console.error('Failed to update priority:', e);
-    }
+    this.tickets.update(prev =>
+      prev.map(t => t.id === id ? { ...t, priority, type: priority === 'Urgent' ? 'INC' : 'REQ', activity: { time: 'Just now', description: `Priority updated to ${priority}` } } : t)
+    );
+    this.saveLocalTickets();
   }
 
   private getInitials(name: string): string {
