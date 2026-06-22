@@ -57,7 +57,22 @@ export class AdminPanelComponent {
 
   closeAddModal() {
     this.showAddModal.set(false);
+  }
+
+  copied = signal(false);
+
+  closePasswordModal() {
     this.showPasswordReveal.set(false);
+    this.generatedPassword = '';
+    this.copied.set(false);
+  }
+
+  copyPassword() {
+    if (this.generatedPassword && typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(this.generatedPassword);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    }
   }
 
   async onAddAgentSubmit() {
@@ -70,7 +85,8 @@ export class AdminPanelComponent {
     try {
       const added = await this.agentService.addAgent(this.formName, this.formEmail, this.formRole);
       this.generatedPassword = added.password || '';
-      this.showPasswordReveal.set(true);
+      this.showAddModal.set(false); // Close the creation modal
+      this.showPasswordReveal.set(true); // Open the password modal
     } catch (e: any) {
       this.errorMessage = e.message || 'Error al crear el agente.';
     }

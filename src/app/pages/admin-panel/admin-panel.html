@@ -135,89 +135,117 @@
           </button>
         </div>
         
-        @if (!showPasswordReveal()) {
-          <form (ngSubmit)="onAddAgentSubmit()" class="p-6 space-y-4">
-            @if (errorMessage) {
-              <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
-                {{ errorMessage }}
-              </div>
-            }
+        <form (ngSubmit)="onAddAgentSubmit()" class="p-6 space-y-4">
+          @if (errorMessage) {
+            <div class="p-3 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl">
+              {{ errorMessage }}
+            </div>
+          }
 
-            <div class="space-y-1">
-              <label for="admin-add-agent-name" class="text-xs font-semibold text-slate-500 uppercase">Nombre Completo</label>
-              <input 
-                type="text" 
-                id="admin-add-agent-name"
-                [(ngModel)]="formName" 
-                name="name" 
-                required
-                placeholder="Ej. Víctor Morales"
-                autocomplete="name"
-                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              />
-            </div>
+          <div class="space-y-1">
+            <label for="admin-add-agent-name" class="text-xs font-semibold text-slate-500 uppercase">Nombre Completo</label>
+            <input 
+              type="text" 
+              id="admin-add-agent-name"
+              [(ngModel)]="formName" 
+              name="name" 
+              required
+              placeholder="Ej. Víctor Morales"
+              autocomplete="name"
+              class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
 
-            <div class="space-y-1">
-              <label for="admin-add-agent-email" class="text-xs font-semibold text-slate-500 uppercase">Correo Electrónico (Debe terminar en @kong.cl)</label>
-              <input 
-                type="email" 
-                id="admin-add-agent-email"
-                [(ngModel)]="formEmail" 
-                name="email" 
-                required
-                placeholder="victor@kong.cl"
-                autocomplete="email"
-                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-              />
-            </div>
+          <div class="space-y-1">
+            <label for="admin-add-agent-email" class="text-xs font-semibold text-slate-500 uppercase">Correo Electrónico (Debe terminar en @kong.cl)</label>
+            <input 
+              type="email" 
+              id="admin-add-agent-email"
+              [(ngModel)]="formEmail" 
+              name="email" 
+              required
+              placeholder="victor@kong.cl"
+              autocomplete="email"
+              class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            />
+          </div>
 
-            <div class="space-y-1">
-              <label for="admin-add-agent-role" class="text-xs font-semibold text-slate-500 uppercase">Rol Corporativo</label>
-              <select 
-                id="admin-add-agent-role"
-                [(ngModel)]="formRole" 
-                name="role"
-                class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white"
-              >
-                <option value="Support Agent">Support Agent</option>
-                <option value="Lead Support Agent">Lead Support Agent</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
+          <div class="space-y-1">
+            <label for="admin-add-agent-role" class="text-xs font-semibold text-slate-500 uppercase">Rol Corporativo</label>
+            <select 
+              id="admin-add-agent-role"
+              [(ngModel)]="formRole" 
+              name="role"
+              class="block w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white"
+            >
+              <option value="Support Agent">Support Agent</option>
+              <option value="Lead Support Agent">Lead Support Agent</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-              <button type="button" (click)="closeAddModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 text-sm font-medium transition cursor-pointer">
-                Cancelar
-              </button>
-              <button type="submit" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-brand-600/10 cursor-pointer">
-                Generar Contraseña e Inscribir
-              </button>
-            </div>
-          </form>
-        } @else {
-          <!-- Password Reveal Screen -->
-          <div class="p-6 space-y-6 text-center">
-            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <div class="space-y-2">
-              <h4 class="font-bold text-slate-800 text-lg">Agente Creado Exitosamente</h4>
-              <p class="text-sm text-slate-500">Copia y entrega la siguiente contraseña asignada al agente. No podrá volver a visualizarse por razones de seguridad.</p>
-            </div>
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" (click)="closeAddModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 text-sm font-medium transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition shadow-lg shadow-brand-600/10 cursor-pointer">
+              Generar Contraseña e Inscribir
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between font-mono text-base font-bold text-slate-800 text-center tracking-wider select-all">
-              <span>{{ generatedPassword }}</span>
-            </div>
+  <!-- Modal: Contraseña Generada -->
+  @if (showPasswordReveal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden animate-scale-up">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800">Contraseña Asignada</h3>
+          <button (click)="closePasswordModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-            <div class="pt-4 border-t border-slate-100 flex justify-center">
-              <button (click)="closeAddModal()" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-medium transition shadow-lg cursor-pointer">
-                Listo, Entendido y Cerrar
+        <div class="p-6 space-y-6 text-center">
+          <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-bold text-slate-800 text-lg">Agente Creado Exitosamente</h4>
+            <p class="text-xs text-slate-500">Copia y entrega la siguiente contraseña asignada al agente. No podrá volver a visualizarse por razones de seguridad.</p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between font-mono text-base font-bold text-slate-800 tracking-wider">
+              <span class="select-all">{{ generatedPassword }}</span>
+              <button (click)="copyPassword()" class="text-brand-600 hover:text-brand-700 p-1.5 rounded-lg hover:bg-brand-50 transition cursor-pointer flex items-center justify-center gap-1 text-xs font-semibold">
+                @if (copied()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="text-emerald-600">¡Copiado!</span>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
+                  <span>Copiar</span>
+                }
               </button>
             </div>
           </div>
-        }
+
+          <div class="pt-4 border-t border-slate-100 flex justify-center">
+            <button (click)="closePasswordModal()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold transition shadow-lg cursor-pointer">
+              Cerrar y Continuar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   }

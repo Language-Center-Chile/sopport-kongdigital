@@ -26,24 +26,6 @@ export class AgentService {
       status: 'Offline',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
       password: 'Admin1234567'
-    },
-    {
-      id: 'agent-2',
-      name: 'Sarah Connor',
-      email: 'sarah.connor@kong.cl',
-      role: 'Support Agent',
-      status: 'Offline',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face',
-      password: 'Agent1234567'
-    },
-    {
-      id: 'agent-3',
-      name: 'Marcus Aurelius',
-      email: 'marcus.aurelius@kong.cl',
-      role: 'Support Agent',
-      status: 'Offline',
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=face',
-      password: 'Agent1234567'
     }
   ];
 
@@ -52,6 +34,43 @@ export class AgentService {
 
   constructor() {
     this.initAgents();
+    this.setupTabSync();
+  }
+
+  private setupTabSync() {
+    if (typeof window !== 'undefined' && typeof window.addEventListener !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'support_agents' || event.key === 'agent_statuses') {
+          this.loadLocalAgents();
+        }
+      });
+
+      // Synchronously set the active agent as Offline on tab/window closure
+      const setOffline = () => {
+        const current = this.currentAgent();
+        if (current) {
+          const agentId = current.id;
+          const status: Agent['status'] = 'Offline';
+
+          // Update agent_statuses in localStorage
+          const localStatusMap = JSON.parse(localStorage.getItem('agent_statuses') || '{}');
+          localStatusMap[agentId] = status;
+          localStorage.setItem('agent_statuses', JSON.stringify(localStatusMap));
+
+          // Update support_agents in localStorage
+          const localAgents = localStorage.getItem('support_agents');
+          if (localAgents) {
+            const parsed: Agent[] = JSON.parse(localAgents);
+            const updated = parsed.map(a => a.id === agentId ? { ...a, status } : a);
+            localStorage.setItem('support_agents', JSON.stringify(updated));
+          }
+        }
+      };
+
+      window.addEventListener('pagehide', setOffline);
+      window.addEventListener('beforeunload', setOffline);
+      window.addEventListener('unload', setOffline);
+    }
   }
 
   private initAgents() {
@@ -77,6 +96,11 @@ export class AgentService {
 
   private loadLocalAgents() {
     const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+    if (isBrowser && !localStorage.getItem('agents_demo_cleaned_v1')) {
+      localStorage.removeItem('support_agents');
+      localStorage.setItem('agents_demo_cleaned_v1', 'true');
+    }
+
     const local = isBrowser ? localStorage.getItem('support_agents') : null;
     if (local) {
       const parsed: Agent[] = JSON.parse(local);
