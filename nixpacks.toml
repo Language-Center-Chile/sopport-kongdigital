@@ -1,0 +1,46 @@
+# Nixpacks configuration for Coolify deployment
+# Angular with SSR (Server Side Rendering)
+# Builds and serves the Angular application
+
+[providers]
+  # Use Node.js 20 LTS
+  node = true
+
+[phases.setup]
+  # Set up pnpm as package manager
+  cmds = [
+    "npm install -g pnpm@10.15.1"
+  ]
+
+[phases.install]
+  cmds = [
+    "pnpm install --frozen-lockfile"
+  ]
+  dependsOn = ["setup"]
+
+[phases.build]
+  cmds = [
+    "pnpm run build"
+  ]
+  dependsOn = ["install"]
+
+[start]
+  cmd = "node dist/sopport-app/server/server.mjs"
+  dependsOn = ["build"]
+
+[environment]
+  # Node.js environment
+  NODE_ENV = "production"
+
+  # Port configuration for Coolify (automatically handled)
+  PORT = "3000"
+
+[build]
+  # Cache node_modules and dist to speed up subsequent builds
+  cacheDirectories = ["node_modules"]
+
+  # Prune dev dependencies after build to reduce image size
+  # Uncomment if you don't need dev deps in production
+  # cmds = [
+  #   "pnpm prune --prod"
+  # ]
