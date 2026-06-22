@@ -1,33 +1,23 @@
 # Nixpacks configuration for Coolify deployment
 # Angular with SSR (Server Side Rendering)
 
-[providers]
-  node = true
+providers = ["node"]
 
 [phases.setup]
-  cmds = [
-    "npm install -g pnpm@10.15.1"
-  ]
+cmds = ["npm install -g pnpm@10.15.1"]
 
 [phases.install]
-  cmds = [
-    "pnpm install --frozen-lockfile"
-  ]
-  dependsOn = ["setup"]
+cmds = ["pnpm install --frozen-lockfile"]
+dependsOn = ["setup"]
 
 [phases.build]
-  cmds = [
-    "pnpm run build"
-  ]
-  dependsOn = ["install"]
+cmds = ["pnpm run build"]
+dependsOn = ["install"]
 
 [start]
-  cmd = "node dist/sopport-app/server/server.mjs"
-  dependsOn = ["build"]
+cmd = "node dist/sopport-app/server/server.mjs"
+dependsOn = ["build"]
 
 [environment]
-  NODE_ENV = "production"
-  PORT = "3000"
-
-[build]
-  cacheDirectories = ["node_modules"]
+NODE_ENV = "production"
+PORT = "3000"
