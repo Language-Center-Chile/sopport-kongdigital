@@ -3,15 +3,11 @@
 
 providers = ["node"]
 
-[phases.setup]
-cmds = ["npm install -g pnpm@10.15.1"]
-
 [phases.install]
-cmds = ["pnpm install --frozen-lockfile"]
-dependsOn = ["setup"]
+cmds = ["npm ci"]
 
 [phases.build]
-cmds = ["pnpm run build"]
+cmds = ["npm run build"]
 dependsOn = ["install"]
 
 [start]

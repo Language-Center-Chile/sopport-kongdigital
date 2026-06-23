@@ -2,25 +2,21 @@ FROM docker.io/library/node:22-slim AS build
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+COPY package.json package-lock.json* ./
 
-COPY package.json pnpm-lock.yaml* ./
-
-RUN pnpm install
+RUN npm ci
 
 COPY . .
 
-RUN pnpm run build
+RUN npm run build
 
 FROM node:22-slim
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+COPY package.json package-lock.json* ./
 
-COPY package.json pnpm-lock.yaml* ./
-
-RUN pnpm install --prod
+RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
 
