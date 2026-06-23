@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM docker.io/library/node:22-slim AS build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY . .
 
 RUN pnpm run build
 
-FROM node:22-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
@@ -26,8 +26,8 @@ COPY --from=build /app/dist ./dist
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=4000
+ENV PORT=3000
 
-EXPOSE 4000
+EXPOSE 3000
 
 CMD ["node", "dist/sopport-app/server/server.mjs"]
