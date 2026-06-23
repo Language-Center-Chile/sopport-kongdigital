@@ -26,8 +26,8 @@ COPY --from=build /app/dist ./dist
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=4000
+ENV PORT=17000
 
-EXPOSE 4000
+EXPOSE 17000
 
 CMD ["node", "dist/sopport-app/server/server.mjs"]
